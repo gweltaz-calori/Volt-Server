@@ -6,56 +6,49 @@
     <title>Document</title>
   </head>
   <body>
-    <audio controls playsinline autoplay></audio>
+    <audio controls playsinline></audio>
     <script src="https://cdn.socket.io/3.1.3/socket.io.min.js"></script>
     <script>
-      /* const socket = io("/");
+      const socket = io("/");
+      const usersInSessions = [];
+      let session;
       let audio = document.querySelector("audio");
       let localConnection = new RTCPeerConnection();
-      localConnection.onicecandidate = ({ candidate }) => {
-        console.log(candidate);
-      };
 
-      localConnection.ontrack = ({ streams: [stream] }) => {
-        audio.srcObject = stream;
-      };
-      localConnection
-        .createOffer()
-        .then((offer) => localConnection.setLocalDescription(offer))
-        .then(() => {
-          console.log("emit offer");
-          socket.emit("offer", {
-            session_id: location.pathname.replace("/", ""),
-            description: localConnection.localDescription,
+      socket.on("joined-session", (newSession) => {
+        session = newSession;
+        localConnection.onicecandidate = ({ candidate }) => {
+          candidate &&
+            socket.emit("candidate", {
+              socket_id: session.socket_id,
+              candidate,
+            });
+        };
+        localConnection.ontrack = ({ streams: [stream] }) => {
+          audio.srcObject = stream;
+        };
+        localConnection
+          .createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true })
+          .then((offer) => localConnection.setLocalDescription(offer))
+          .then(() => {
+            console.log("emit offer");
+            socket.emit("offer", {
+              session_id: location.pathname.replace("/", ""),
+              description: localConnection.localDescription,
+            });
           });
+        socket.on("answer", (answer) => {
+          console.log("received answer");
+          localConnection.setRemoteDescription(answer.description);
         });
 
-      socket.on("answer", (answer) => {
-        console.log("received answer");
-        localConnection.setRemoteDescription(answer.description);
+        socket.on("candidate", (candidate) => {
+          const conn = localConnection;
+          conn.addIceCandidate(new RTCIceCandidate(candidate));
+        });
       });
-
-      socket.on("candidate", (candidate) => {
-        const conn = localConnection;
-        conn.addIceCandidate(new RTCIceCandidate(candidate));
-      }); */
-      ws.send({
-        type: "join-session",
-      });
-
-      ws.on("message", (res) => {
-        try {
-          const message = JSON.parse(res);
-          switch (message.type) {
-            case "session:created":
-              onSessionCreated(message.data);
-              break;
-            default:
-              break;
-          }
-        } catch (e) {
-          console.log(res);
-        }
+      socket.emit("join-session", {
+        session_id: location.pathname.replace("/", ""),
       });
     </script>
   </body>
