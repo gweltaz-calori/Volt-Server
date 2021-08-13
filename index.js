@@ -13,7 +13,11 @@ app.set("view engine", "ejs");
 app.use(cors());
 
 const server = http.createServer(app);
-const io = socketio(server);
+const io = socketio(server, {
+  cors: {
+    origin: "*",
+  },
+});
 const sessions = [];
 
 io.on("connection", (socket) => {
