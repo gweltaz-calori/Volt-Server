@@ -6,13 +6,14 @@
     <title>Document</title>
   </head>
   <body>
-    <audio controls playsinline></audio>
+    <button>join</button>
     <script src="https://cdn.socket.io/3.1.3/socket.io.min.js"></script>
     <script>
       const socket = io("/");
       const usersInSessions = [];
       let session;
       let audio = document.querySelector("audio");
+      let joinButton = document.querySelector("button");
       let localConnection = new RTCPeerConnection();
 
       socket.on("joined-session", (newSession) => {
@@ -25,13 +26,27 @@
             });
         };
         localConnection.ontrack = ({ streams: [stream] }) => {
-          audio.srcObject = stream;
+          //audio.srcObject = stream;
+          joinButton.addEventListener("click", () => {
+            var ctx = new AudioContext();
+            var audiot = new Audio();
+            audiot.srcObject = stream;
+            var gainNode = ctx.createGain();
+            gainNode.gain.value = 1;
+            audiot.onloadedmetadata = function () {
+              var source = ctx.createMediaStreamSource(audiot.srcObject);
+              audiot.play();
+              audiot.muted = true;
+              source.connect(gainNode);
+              gainNode.connect(ctx.destination);
+            };
+          });
         };
         localConnection
           .createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true })
           .then((offer) => localConnection.setLocalDescription(offer))
           .then(() => {
-            console.log("emit offer");
+            console.log(localConnection.localDescription);
             socket.emit("offer", {
               session_id: location.pathname.replace("/", ""),
               description: localConnection.localDescription,
