@@ -18,7 +18,6 @@ const io = socketio(server, {
   cors: {
     origin: "*",
   },
-  wsEngine: ws.Server,
 });
 const sessions = [];
 

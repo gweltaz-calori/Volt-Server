@@ -2,7 +2,8 @@ const socket = io("/");
 const usersInSessions = [];
 let session;
 let audio = document.querySelector("audio");
-let joinButton = document.querySelector("button");
+let joinButton = document.querySelector(".join");
+let leaveButton = document.querySelector(".leave");
 let localStream = null;
 const iceConfiguration = {
   iceServers: [
@@ -41,7 +42,9 @@ joinButton.addEventListener("click", () => {
     source.connect(gainNode);
     gainNode.connect(ctx.destination);
   };
+
   joinButton.style.display = "none";
+  leaveButton.style.display = "flex";
 });
 
 socket.on("joined-session", (newSession) => {
