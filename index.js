@@ -8,6 +8,7 @@ const ws = require("ws");
 const app = express();
 const port = 3000;
 
+app.use(express.static("public"));
 app.set("views", __dirname + "/views");
 app.set("view engine", "ejs");
 app.use(cors());
@@ -21,6 +22,7 @@ io.on("connection", (socket) => {
     const session = {
       session_id: v4(),
       socket_id: socket.id,
+      users: [],
     };
     sessions.push(session);
     socket.emit("session:created", session);
@@ -40,18 +42,27 @@ io.on("connection", (socket) => {
       });
   });
   socket.on("join-session", (data) => {
-    socket.emit(
-      "joined-session",
-      sessions.find((session) => session.session_id == data.session_id)
+    const session = sessions.find(
+      (session) => session.session_id == data.session_id
     );
+    session.users.push(socket.id);
+    socket.emit("joined-session", session);
   });
   socket.on("answer", (answer) => {
+    console.log(answer.socket_id);
     socket.to(answer.socket_id).emit("answer", {
       description: answer.description,
     });
   });
   socket.on("candidate", (candidate) => {
     socket.to(candidate.socket_id).emit("candidate", candidate.candidate);
+  });
+  socket.on("close-connection", ({ session }) => {
+    for (let user of sessions.find(
+      (sessionItem) => session.session_id == sessionItem.session_id
+    ).users) {
+      socket.to(user).emit("connection-closed");
+    }
   });
   socket.on("disconnect", () => {
     const index = sessions.findIndex(
