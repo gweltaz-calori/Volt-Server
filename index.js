@@ -3,7 +3,9 @@ const { v4 } = require("uuid");
 const http = require("http");
 const express = require("express");
 const socketio = require("socket.io");
+const { Server } = require("socket.io");
 var cors = require("cors");
+const ws = require("ws");
 
 const app = express();
 
@@ -13,9 +15,10 @@ app.set("view engine", "ejs");
 app.use(cors());
 
 const server = http.createServer(app);
-const io = socketio(server);
+const io = new Server(server, {
+  wsEngine: ws.Server,
+});
 const sessions = [];
-
 io.on("connection", (socket) => {
   console.log(socket.id);
   socket.on("create:session", () => {
