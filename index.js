@@ -4,7 +4,6 @@ const http = require("http");
 const express = require("express");
 const socketio = require("socket.io");
 var cors = require("cors");
-const ws = require("ws");
 
 const app = express();
 
@@ -18,6 +17,7 @@ const io = socketio(server);
 const sessions = [];
 
 io.on("connection", (socket) => {
+  console.log(socket.id);
   socket.on("create:session", () => {
     const session = {
       session_id: v4(),
