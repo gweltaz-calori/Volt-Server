@@ -1,3 +1,4 @@
+require("dotenv").config();
 const { v4 } = require("uuid");
 const http = require("http");
 const express = require("express");
@@ -6,7 +7,6 @@ var cors = require("cors");
 const ws = require("ws");
 
 const app = express();
-const port = 3000;
 
 app.use(express.static("public"));
 app.set("views", __dirname + "/views");
@@ -85,6 +85,6 @@ app.get("/:session_id", async (req, res) => {
   }
 });
 
-server.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`);
+server.listen(process.env.PORT, () => {
+  console.log(`App listening at http://localhost:${process.env.PORT}`);
 });
