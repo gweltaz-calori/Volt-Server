@@ -44,7 +44,13 @@
         };
         localConnection
           .createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true })
-          .then((offer) => localConnection.setLocalDescription(offer))
+          .then(async (offer) => {
+            offer.sdp = offer.sdp.replace(
+              "useinbandfec=1",
+              "useinbandfec=1; stereo=1"
+            );
+            return await localConnection.setLocalDescription(offer);
+          })
           .then(() => {
             console.log(localConnection.localDescription);
             socket.emit("offer", {
