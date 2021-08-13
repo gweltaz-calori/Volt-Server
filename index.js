@@ -4,6 +4,7 @@ const http = require("http");
 const express = require("express");
 const socketio = require("socket.io");
 var cors = require("cors");
+const ws = require("ws");
 
 const app = express();
 
@@ -17,6 +18,7 @@ const io = socketio(server, {
   cors: {
     origin: "*",
   },
+  wsEngine: ws.Server,
 });
 const sessions = [];
 
