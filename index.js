@@ -22,19 +22,30 @@ const io = socketio(server, {
 const sessions = [];
 
 io.on("connection", (socket) => {
-  console.log(socket.id);
   socket.on("create:session", () => {
     const session = {
       session_id: v4(),
       socket_id: socket.id,
       users: [],
+      started: false,
     };
     sessions.push(session);
     socket.emit("session:created", session);
   });
-  socket.on("data", (data) => {
-    console.log(data);
+
+  socket.on("session-status", ({ started, session_id }) => {
+    sessions.find((session) => session.session_id == session_id).started =
+      started;
+
+    for (let user of sessions.find(
+      (session) => session.session_id == session_id
+    ).users) {
+      socket.to(user).emit("session-status", {
+        started,
+      });
+    }
   });
+
   socket.on("offer", (data) => {
     socket
       .to(
@@ -46,15 +57,28 @@ io.on("connection", (socket) => {
         socket_id: socket.id,
       });
   });
+
+  socket.on("session:offer", (data) => {
+    for (let user of sessions.find(
+      (session) => session.session_id == data.session_id
+    ).users) {
+      socket.to(user).emit("session:offer", {
+        description: data.description,
+        socket_id: socket.id,
+      });
+    }
+  });
+
   socket.on("join-session", (data) => {
     const session = sessions.find(
       (session) => session.session_id == data.session_id
     );
     session.users.push(socket.id);
+    session.users = [...new Set(session.users)];
     socket.emit("joined-session", session);
+    socket.to(session.socket_id).emit("users", session.users);
   });
   socket.on("answer", (answer) => {
-    console.log(answer.socket_id);
     socket.to(answer.socket_id).emit("answer", {
       description: answer.description,
     });
@@ -62,9 +86,9 @@ io.on("connection", (socket) => {
   socket.on("candidate", (candidate) => {
     socket.to(candidate.socket_id).emit("candidate", candidate.candidate);
   });
-  socket.on("close-connection", ({ session }) => {
+  socket.on("close-connection", (data) => {
     for (let user of sessions.find(
-      (sessionItem) => session.session_id == sessionItem.session_id
+      (sessionItem) => data.session.session_id == sessionItem.session_id
     ).users) {
       socket.to(user).emit("connection-closed");
     }
