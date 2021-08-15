@@ -7,6 +7,7 @@ body {
 
 * {
   font-family: "Montserrat", sans-serif;
+  user-select: none;
 }
 
 body {
@@ -15,6 +16,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-direction: column;
 }
 
 button {
@@ -54,4 +56,42 @@ button {
 
 .icon {
   margin-left: 5px;
+}
+
+.slider {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.slider_filled {
+  border-radius: 20px;
+  height: 6px;
+  background: white;
+  position: absolute;
+  left: 0;
+
+  width: 100%;
+}
+
+.slider_background {
+  border-radius: 20px;
+  width: 109px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.41);
+}
+
+.slider_grab {
+  border-radius: 50%;
+  width: 21px;
+  height: 21px;
+  position: absolute;
+  background: #ffffff;
+  cursor: pointer;
+  transform: translateX(calc(109px - 21px));
+  z-index: 9999;
+}
+
+canvas {
+  margin-bottom: 20px;
 }

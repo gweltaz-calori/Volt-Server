@@ -78,6 +78,17 @@ io.on("connection", (socket) => {
     socket.emit("joined-session", session);
     socket.to(session.socket_id).emit("users", session.users);
   });
+  socket.on("leave-session", ({ session_id }) => {
+    const session = sessions.find(
+      (session) => session.session_id == session_id
+    );
+    session.users.splice(
+      session.users.findIndex((user) => user === socket.id),
+      1
+    );
+    socket.to(session.socket_id).emit("users", session.users);
+  });
+
   socket.on("answer", (answer) => {
     socket.to(answer.socket_id).emit("answer", {
       description: answer.description,
